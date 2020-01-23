@@ -1,14 +1,14 @@
 package AssignMentOne;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class implements some tests over http://the-internet.herokuapp.com/ website Form Authentication page.
@@ -31,6 +31,7 @@ public class LoginTest {
 
         System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
         driver = new ChromeDriver();
+
     }
     @Test
     public void openTheInternet(){
@@ -58,19 +59,48 @@ public class LoginTest {
     }
     @Test
     public void verifyLogin() {
-        driver.get("http://the-internet.herokuapp.com/login");
-        driver.findElement(By.id("username")).sendKeys("tomsmith");
-        driver.findElement(By.id("password")).sendKeys("SuperSecretPassword!");
-        driver.findElement(By.cssSelector("button.radius")).click();
-
+        loginByUsernamePassword("tomsmith", "SuperSecretPassword!");
         String currentUrl = driver.getCurrentUrl();
         Assert.assertEquals(currentUrl,"http://the-internet.herokuapp.com/secure", "Login failed");
     }
 
+    @Test
+    public void verifyErrorWrongUserName(){
+        loginByUsernamePassword("wrongUserName","SuperSecretPassword!");
+        String errorMessage = driver.findElement(By.id("flash")).getText();
+        Assert.assertEquals(errorMessage,"Your username is invalid!\n×", "Error message is wrong.");
+    }
+
+    @Test
+    public void verifyErrorWrongPassword(){
+        loginByUsernamePassword("tomsmith","WrongPassword");
+        String errorMessage = driver.findElement(By.id("flash")).getText();
+        Assert.assertEquals(errorMessage,"Your password is invalid!\n×", "Error message is wrong.");
+    }
+
+    @Test
+    public void verifyErrorEmptyUsername(){
+        loginByUsernamePassword("", "SuperSecretPassword!");
+        String errorMessage = driver.findElement(By.id("flash")).getText();
+        Assert.assertEquals(errorMessage,"Your username is invalid!\n×", "Error message is wrong.");
+    }
+
+    @Test
+    public void verifyErrorEmptyPassword() {
+        loginByUsernamePassword("tomsmith", "");
+        String errorMessage = driver.findElement(By.id("flash")).getText();
+        Assert.assertEquals(errorMessage, "Your password is invalid!\n×", "Error message is wrong.");
+    }
     private String getFormAuthenticationHeadText(){
         return driver.findElement(By.cssSelector("h2")).getText();
     }
 
+    private void loginByUsernamePassword(String username, String password) {
+        driver.get("http://the-internet.herokuapp.com/login");
+        driver.findElement(By.id("username")).sendKeys(username);
+        driver.findElement(By.id("password")).sendKeys(password);
+        driver.findElement(By.cssSelector("button.radius")).click();
+    }
     @AfterClass
     public void tearDown() {
         driver.quit();
