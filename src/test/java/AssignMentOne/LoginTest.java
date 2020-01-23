@@ -6,11 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeMethod;
-
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 
 import java.util.List;
 
@@ -30,7 +26,7 @@ public class LoginTest {
 
     private WebDriver driver;
 
-    @BeforeMethod
+    @BeforeClass
     public void setUp() {
 
         System.setProperty("webdriver.chrome.driver", "src/main/resources/chromedriver.exe");
@@ -55,30 +51,28 @@ public class LoginTest {
 
     @Test
     public void openFormAuthenticationByClick() {
-       driver.findElement(By.cssSelector("#content > ul > li:nth-child(21) > a")).click();
+        driver.get("http://the-internet.herokuapp.com/");
+        driver.findElement(By.linkText("Form Authentication")).click();
         Assert.assertEquals(getFormAuthenticationHeadText(),"Login Page",
                 "Something went wrong when opening form authentication by click.");
     }
     @Test
     public void verifyLogin() {
+        driver.get("http://the-internet.herokuapp.com/login");
         driver.findElement(By.id("username")).sendKeys("tomsmith");
         driver.findElement(By.id("password")).sendKeys("SuperSecretPassword!");
+        driver.findElement(By.cssSelector("button.radius")).click();
 
-        WebElement loginButton = driver.findElement(By.cssSelector("#login > button"));
-        loginButton.click();
         String currentUrl = driver.getCurrentUrl();
         Assert.assertEquals(currentUrl,"http://the-internet.herokuapp.com/secure", "Login failed");
     }
 
-    public String getFormAuthenticationHeadText(){
-        String loginPageHeaderText = driver.findElement(By.className("example")).getText();
-        return loginPageHeaderText;
+    private String getFormAuthenticationHeadText(){
+        return driver.findElement(By.cssSelector("h2")).getText();
     }
 
-    @AfterMethod
+    @AfterClass
     public void tearDown() {
         driver.quit();
     }
-
-
 }
